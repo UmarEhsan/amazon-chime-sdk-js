@@ -1,6 +1,7 @@
 // Copyright 2019-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import Attendee from '../attendee/Attendee';
 import Logger from '../logger/Logger';
 import {
   ISdkBitrateFrame,
@@ -116,8 +117,9 @@ export default class DefaultVideoStreamIndex implements VideoStreamIndex {
     return set;
   }
 
-  allVideoSendingAttendeesExcludingSelf(selfAttendeeId: string): Set<string> {
-    const attendees = new Set<string>();
+  allVideoSendingAttendeesExcludingSelf(selfAttendeeId: string): Attendee[] {
+    const attendees = [];
+    const attendeeSet = new Set<string>();
     if (this.currentIndex) {
       if (this.currentIndex.sources.length) {
         for (const stream of this.currentIndex.sources) {
@@ -125,12 +127,15 @@ export default class DefaultVideoStreamIndex implements VideoStreamIndex {
             stream.attendeeId !== selfAttendeeId &&
             stream.mediaType === SdkStreamMediaType.VIDEO
           ) {
-            attendees.add(stream.attendeeId);
+            const { attendeeId, externalUserId } = stream;
+            if (!attendeeSet.has(attendeeId)) {
+              attendees.push({ attendeeId, externalUserId });
+              attendeeSet.add(attendeeId);
+            }
           }
         }
       }
     }
-
     return attendees;
   }
 

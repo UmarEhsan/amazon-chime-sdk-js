@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an optional parameter to the serverless demo deployment script to specify Chime endpoint, and deploy to a new devo stage that talks to gamma Chime endpoint for canary
 - Add extended debugging for saucelab sessions
 - Add data message throttle limits to documentation
+- Add simulcast uplink policy layer change notification methods and observers
+- Add remote videos available observer and method
 
 ### Changed
 - Update test results to Sauce Labs before emitting CloudWatch metrics for integration tests

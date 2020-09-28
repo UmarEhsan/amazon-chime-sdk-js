@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import ActiveSpeakerPolicy from '../activespeakerpolicy/ActiveSpeakerPolicy';
+import Attendee from '../attendee/Attendee';
 import AudioMixController from '../audiomixcontroller/AudioMixController';
 import AudioVideoController from '../audiovideocontroller/AudioVideoController';
 import AudioVideoFacade from '../audiovideofacade/AudioVideoFacade';
@@ -458,5 +459,11 @@ export default class DefaultAudioVideoFacade implements AudioVideoFacade {
       s += ` -> ${JSON.stringify(output)}`;
     }
     this.audioVideoController.logger.info(s);
+  }
+
+  getRemoteVideosAvailable(): Attendee[] {
+    const result = this.audioVideoController.getRemoteVideosAvailable();
+    this.trace('getRemoteVideosAvailable', null, result);
+    return result;
   }
 }

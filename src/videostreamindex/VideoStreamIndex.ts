@@ -1,6 +1,7 @@
 // Copyright 2019-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import Attendee from '../attendee/Attendee';
 import {
   ISdkBitrateFrame,
   SdkIndexFrame,
@@ -39,9 +40,9 @@ export default interface VideoStreamIndex {
   allStreams(): VideoStreamIdSet;
 
   /**
-   * Returns the attendee ids of attendees who are publishing videos excluding self
+   * Returns attendees who are sending videos excluding self
    */
-  allVideoSendingAttendeesExcludingSelf(selfAttendeeId: string): Set<string>;
+  allVideoSendingAttendeesExcludingSelf(selfAttendeeId: string): Attendee[];
 
   /**
    * Return a selection set of streams for subscription based on self attendee id, size information of tiles, bandwidth limitation

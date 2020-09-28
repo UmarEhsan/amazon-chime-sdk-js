@@ -1,6 +1,7 @@
 // Copyright 2019-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import Attendee from '../attendee/Attendee';
 import AudioVideoControllerState from '../audiovideocontroller/AudioVideoControllerState';
 import AudioVideoObserver from '../audiovideoobserver/AudioVideoObserver';
 import Maybe from '../maybe/Maybe';
@@ -74,6 +75,7 @@ export default class ReceiveVideoStreamIndexTask extends BaseTask
       videoUplinkBandwidthPolicy,
     } = this.context;
 
+    const oldAttendees = videoStreamIndex.allVideoSendingAttendeesExcludingSelf(selfAttendeeId);
     videoStreamIndex.integrateIndexFrame(indexFrame);
     videoDownlinkBandwidthPolicy.updateIndex(videoStreamIndex);
     videoUplinkBandwidthPolicy.updateIndex(videoStreamIndex);
@@ -81,6 +83,33 @@ export default class ReceiveVideoStreamIndexTask extends BaseTask
     this.resubscribe(videoDownlinkBandwidthPolicy, videoUplinkBandwidthPolicy);
     this.updateVideoAvailability(indexFrame);
     this.handleIndexVideosPausedAtSource();
+    const newAttendees = videoStreamIndex.allVideoSendingAttendeesExcludingSelf(selfAttendeeId);
+    if (!this.areVideoSendingAttendeesEqual(oldAttendees, newAttendees)) {
+      this.context.audioVideoController.forEachObserver((observer: AudioVideoObserver) => {
+        Maybe.of(observer.remoteVideosAvailableDidChange).map(f => f.bind(observer)(newAttendees));
+      });
+    }
+  }
+
+  private areVideoSendingAttendeesEqual(
+    oldAttendees: Attendee[],
+    newAttendees: Attendee[]
+  ): boolean {
+    if (oldAttendees.length !== newAttendees.length) {
+      return false;
+    }
+    const compare = (attendeeA: Attendee, attendeeB: Attendee): number =>
+      attendeeA.attendeeId.localeCompare(attendeeB.attendeeId);
+
+    const sortedOldAttendees = [...oldAttendees].sort(compare);
+    const sortedNewAttendees = [...newAttendees].sort(compare);
+
+    for (let i = 0; i < sortedOldAttendees.length; i++) {
+      if (sortedOldAttendees[i].attendeeId !== sortedNewAttendees[i].attendeeId) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private resubscribe(

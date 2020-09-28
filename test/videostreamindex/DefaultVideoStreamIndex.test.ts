@@ -3,6 +3,7 @@
 
 import * as chai from 'chai';
 
+import Attendee from '../../src/attendee/Attendee';
 import LogLevel from '../../src/logger/LogLevel';
 import NoOpLogger from '../../src/logger/NoOpLogger';
 import {
@@ -221,10 +222,12 @@ describe('DefaultVideoStreamIndex', () => {
   });
 
   describe('allVideoSendingAttendeesExcludingSelf', () => {
+    const compare = (a: Attendee, b: Attendee): number => a.attendeeId.localeCompare(b.attendeeId);
+
     it('returns set of all video sending attendees', () => {
-      expect(Array.from(index.allVideoSendingAttendeesExcludingSelf('xy1'))).to.deep.equal([]);
+      expect(index.allVideoSendingAttendeesExcludingSelf('xy1')).to.deep.equal([]);
       index.integrateIndexFrame(new SdkIndexFrame());
-      expect(Array.from(index.allVideoSendingAttendeesExcludingSelf('xy1'))).to.deep.equal([]);
+      expect(index.allVideoSendingAttendeesExcludingSelf('xy1')).to.deep.equal([]);
       index.integrateIndexFrame(
         new SdkIndexFrame({
           sources: [
@@ -233,6 +236,7 @@ describe('DefaultVideoStreamIndex', () => {
               groupId: 1,
               maxBitrateKbps: 100,
               attendeeId: 'xy1',
+              externalUserId: 'ext#xy1',
               mediaType: SdkStreamMediaType.VIDEO,
             }),
             new SdkStreamDescriptor({
@@ -240,6 +244,7 @@ describe('DefaultVideoStreamIndex', () => {
               groupId: 1,
               maxBitrateKbps: 600,
               attendeeId: 'xy1',
+              externalUserId: 'ext#xy1',
               mediaType: SdkStreamMediaType.AUDIO,
             }),
             new SdkStreamDescriptor({
@@ -247,6 +252,7 @@ describe('DefaultVideoStreamIndex', () => {
               groupId: 399,
               maxBitrateKbps: 800,
               attendeeId: 'xy1',
+              externalUserId: 'ext#xy1',
               mediaType: SdkStreamMediaType.VIDEO,
             }),
             new SdkStreamDescriptor({
@@ -254,6 +260,7 @@ describe('DefaultVideoStreamIndex', () => {
               groupId: 2,
               maxBitrateKbps: 50,
               attendeeId: 'xy2',
+              externalUserId: 'ext#xy2',
               mediaType: SdkStreamMediaType.VIDEO,
             }),
             new SdkStreamDescriptor({
@@ -261,6 +268,7 @@ describe('DefaultVideoStreamIndex', () => {
               groupId: 399,
               maxBitrateKbps: 200,
               attendeeId: 'xy1',
+              externalUserId: 'ext#xy1',
               mediaType: SdkStreamMediaType.VIDEO,
             }),
             new SdkStreamDescriptor({
@@ -268,16 +276,20 @@ describe('DefaultVideoStreamIndex', () => {
               groupId: 2,
               maxBitrateKbps: 400,
               attendeeId: 'xy2',
+              externalUserId: 'ext#xy2',
               mediaType: SdkStreamMediaType.VIDEO,
             }),
           ],
         })
       );
-      expect(Array.from(index.allVideoSendingAttendeesExcludingSelf('xy1')).sort()).to.deep.equal(
-        ['xy2'].sort()
+      expect(index.allVideoSendingAttendeesExcludingSelf('xy1').sort()).to.deep.equal(
+        [{ attendeeId: 'xy2', externalUserId: 'ext#xy2' }].sort(compare)
       );
       expect(Array.from(index.allVideoSendingAttendeesExcludingSelf('xy3')).sort()).to.deep.equal(
-        ['xy1', 'xy2'].sort()
+        [
+          { attendeeId: 'xy1', externalUserId: 'ext#xy1' },
+          { attendeeId: 'xy2', externalUserId: 'ext#xy2' },
+        ].sort(compare)
       );
     });
   });
